@@ -22,8 +22,8 @@ export GETOPTIONSFILE="$SCRIPTPATH/get_options.sh"
 export STANDARDCONFIG="$SCRIPTPATH/standard.conf"
 export CONFIGSPATH="$SCRIPTPATH/configs"
 export POSTINSTALLPATH="$SCRIPTPATH/post-install"
-export IMAGESPATH="$SCRIPTPATH/../images/"
-export OLDIMAGESPATH="$SCRIPTPATH/../images.old/"
+export IMAGESPATH="$SCRIPTPATH/../remote/images/"
+export OLDIMAGESPATH="$SCRIPTPATH/../remote/images.old/"
 export IMAGESPATHTYPE="local"
 export IMAGESEXT="tar.gz"
 export IMAGEFILETYPE="tgz"
@@ -33,8 +33,8 @@ export COMPANY_PUBKEYS=(
   "$SCRIPTPATH/gpg/public-key-2018.asc"
   "$SCRIPTPATH/gpg/public-key-2023.asc"
 )
-export COMPANY="Hetzner Online GmbH"
-export C_SHORT="hetzner"
+export COMPANY="LowHosting"
+export C_SHORT="lowhosting"
 export LOCKFILE='/run/lock/installimage'
 export SYSTEMD_NSPAWN_TMP_DIR="$FOLD/systemd_nspawn"
 
@@ -43,7 +43,7 @@ export STATSSERVER4="88.198.31.148"
 export STATSSERVER6="[2a01:4f8:0:a0a1::bad:1]"
 export HDDMINSIZE="7000000"
 
-export DNSRESOLVER=("185.12.64.1" "185.12.64.2")
+export DNSRESOLVER=("8.8.8.8", "1.1.1.1")
 export DNSRESOLVER_V6=("2a01:4ff:ff00::add:1" "2a01:4ff:ff00::add:2")
 export NTPSERVERS=("ntp1.hetzner.de" "ntp2.hetzner.com" "ntp3.hetzner.net")
 export AUTH_DNS1="ns1.first-ns.de"
