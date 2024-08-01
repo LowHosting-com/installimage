@@ -424,8 +424,8 @@ status_none "Configuring authentication"
 
 prompt_passwd() {
   echo
-  real -rsp "Enter new root password: " PASSWORD
-  echo
+  read -rsp "Enter new root password: " PASSWORD
+  # echo
 
   export ROOTHASH=$(echo $PASSWORD | openssl passwd -6 -salt -xyz --stdin)
   unset PASSWORD # unset clear-text password
