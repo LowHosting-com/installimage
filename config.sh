@@ -9,6 +9,7 @@
 
 DEBUGFILE=/root/debug.txt
 
+export LH_NFSMOUNT="/nfs/"
 
 # set up standard env
 export SCRIPTPATH; SCRIPTPATH=$(dirname "$0")
