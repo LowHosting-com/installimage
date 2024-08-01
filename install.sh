@@ -422,6 +422,15 @@ status_done
 inc_step
 status_none "Configuring authentication"
 
+prompt_passwd() {
+  echo
+  real -rsp "Enter new root password: " PASSWORD
+  echo
+
+  export ROOTHASH=$(echo $PASSWORD | openssl passwd -6 -salt -xyz --stdin)
+  unset PASSWORD # unset clear-text password
+}
+
 if [ -n "$OPT_SSHKEYS_URL" ] ; then
     status_busy_nostep "  Fetching SSH keys"
     debug "# Fetch public SSH keys"
@@ -437,10 +446,14 @@ if [ "$OPT_USE_SSHKEYS" = "1" -a -z "$FORCE_PASSWORD" ]; then
   set_ssh_rootlogin "without-password"
   status_donefailed $?
 else
-  status_busy_nostep "  Setting root password"
-  check_rescue_password_hashing_algo_supported_by_installed_os
+  # status_busy_nostep "  Setting root password"
+  status_busy_nostep "  Prompting for root password" 
+  debug "# Prompting for user-inputted root password"
+  prompt_passwd
+  # check_rescue_password_hashing_algo_supported_by_installed_os
   status_donefailed $?
-  get_rootpassword "/etc/shadow" || status_failed
+
+  # get_rootpassword "/etc/shadow" || status_failed
   set_rootpassword "$FOLD/hdd/etc/shadow" "$ROOTHASH"
   status_donefailed $?
   status_busy_nostep "  Enabling SSH root login with password"
