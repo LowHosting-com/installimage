@@ -12,7 +12,7 @@ DEBUGFILE=/root/debug.txt
 export LH_NFSMOUNT="/nfs/"
 
 # set up standard env
-export SCRIPTPATH; SCRIPTPATH=$(dirname "$0")
+export SCRIPTPATH; SCRIPTPATH=$(dirname $( realpath "$0" ))
 export DISABLEDFILE="$SCRIPTPATH/disabled"
 export SETUPFILE="$SCRIPTPATH/setup.sh"
 export AUTOSETUPFILE="$SCRIPTPATH/autosetup.sh"
