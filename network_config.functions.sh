@@ -19,9 +19,12 @@ setup_etc_sysconfig_network() {
 
 # list network interfaces
 network_interfaces() {
-  for file in /sys/class/net/*; do
-    echo "${file##*/}"
-  done
+  # for file in /sys/class/net/*; do
+  #   echo "${file##*/}"
+  # done
+
+  # assume we are configuring only a single network interface named eth0
+  echo "eth0"
 }
 
 # check whether network interface is virtual
@@ -110,16 +113,19 @@ ipv4_addr_is_reserved_for_future_use() {
 # get network interface ipv4 addrs
 # $1 <network_interface>
 network_interface_ipv4_addrs() {
-  local network_interface="$1"
-  while read line; do
-    [[ "$line" =~ ^\ *inet\ ([^\ ]+) ]] || continue
-    local ipv4_addr="${BASH_REMATCH[1]}"
-    # ignore shared addrs
-    ipv4_addr_is_shared_addr "$ipv4_addr" && continue
-    # ignore addrs reserved for future use
-    ipv4_addr_is_reserved_for_future_use "$ipv4_addr" && continue
-    echo "$ipv4_addr"
-  done < <(ip -4 a s "$network_interface")
+
+  echo $(echo $LH_NETINFO | jq -r '.ip')
+
+  # local network_interface="$1"
+  # while read line; do
+  #   [[ "$line" =~ ^\ *inet\ ([^\ ]+) ]] || continue
+  #   local ipv4_addr="${BASH_REMATCH[1]}"
+  #   # ignore shared addrs
+  #   ipv4_addr_is_shared_addr "$ipv4_addr" && continue
+  #   # ignore addrs reserved for future use
+  #   ipv4_addr_is_reserved_for_future_use "$ipv4_addr" && continue
+  #   echo "$ipv4_addr"
+  # done < <(ip -4 a s "$network_interface")
 }
 
 # check whether ipv6 addr is a link local unicast addr
@@ -147,14 +153,16 @@ network_interface_ipv6_addrs() {
 
 # check whether to use predictable network interface names
 use_predictable_network_interface_names() {
-  [[ "$IAM" == 'centos' ]] && return
-  [[ "$IAM" == 'debian' ]] && return
-  [[ "$IAM" == 'ubuntu' ]] && return
-  [[ "$IAM" == 'archlinux' ]] && return
-  [[ "$IAM" == 'rockylinux' ]] && return
-  [[ "$IAM" == 'almalinux' ]] && return
-  [[ "$IAM" == 'rhel' ]] && return
-  return 1
+  # [[ "$IAM" == 'centos' ]] && return
+  # [[ "$IAM" == 'debian' ]] && return
+  # [[ "$IAM" == 'ubuntu' ]] && return
+  # [[ "$IAM" == 'archlinux' ]] && return
+  # [[ "$IAM" == 'rockylinux' ]] && return
+  # [[ "$IAM" == 'almalinux' ]] && return
+  # [[ "$IAM" == 'rhel' ]] && return
+  # return 1
+
+  return 0
 }
 
 # get network interface driver
@@ -244,7 +252,10 @@ ipv4_addr_netmask() {
 # $1 <network_interface>
 network_interface_ipv4_gateway() {
   local network_interface="$1"
-  [[ "$(ip -4 r l 0/0 dev "$network_interface")" =~ ^default\ via\ ([^\ $'\n']+) ]] && echo "${BASH_REMATCH[1]}"
+  # [[ "$(ip -4 r l 0/0 dev "$network_interface")" =~ ^default\ via\ ([^\ $'\n']+) ]] && echo "${BASH_REMATCH[1]}"
+  
+  echo $(echo $LH_NETINFO | jq -r '.gateway')
+  
 }
 
 # get network interface ipv6 gateway

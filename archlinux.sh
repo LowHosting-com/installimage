@@ -245,6 +245,10 @@ generate_config_grub() {
   local grub_file_bak="$grub_file.bak"
   cp "$grub_file" "$grub_file_bak"
   local grub_linux_default="consoleblank=0"
+
+  # LowHosting
+  grub_linux_default+=' net.ifnames=0 biosdevname=0'
+
   (( USE_KERNEL_MODE_SETTING == 0 )) && grub_linux_default+=' nomodeset'
   has_threadripper_cpu && grub_linux_default+=' pci=nommconf'
   sed -i "s/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT=\"${grub_linux_default}\"/g" "$grub_file" |& debugoutput || return 1

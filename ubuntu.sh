@@ -83,7 +83,7 @@ generate_config_grub() {
 
   # set linux_default in grub
 
-  local grub_linux_default=''
+  local grub_linux_default='biosdevname=0 net.ifnames=0'
   (( USE_KERNEL_MODE_SETTING == 0 )) && grub_linux_default+='nomodeset '
   grub_linux_default+='consoleblank=0'
 
@@ -100,9 +100,9 @@ generate_config_grub() {
     grub_linux_default="${grub_linux_default} iommu=noaperture"
   fi
 
-  if [ "$IMG_VERSION" -ge 1604 ] && [ "$IMG_VERSION" -lt 1710 ]; then
-    grub_linux_default="${grub_linux_default} net.ifnames=0"
-  fi
+  # if [ "$IMG_VERSION" -ge 1604 ] && [ "$IMG_VERSION" -lt 1710 ]; then
+  #   grub_linux_default="${grub_linux_default} net.ifnames=0"
+  # fi
 
   if has_threadripper_cpu; then
     grub_linux_default+=' pci=nommconf'

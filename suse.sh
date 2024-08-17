@@ -93,7 +93,7 @@ generate_config_grub() {
   debug '# device map:'
   cat "$DMAPFILE" | debugoutput
 
-  local grub_linux_default=''
+  local grub_linux_default='net.ifnames=0 biosdevname=0'
   (( USE_KERNEL_MODE_SETTING == 0 )) && grub_linux_default+='nomodeset '
   grub_linux_default+='consoleblank=0'
 
@@ -101,9 +101,11 @@ generate_config_grub() {
     grub_linux_default+=' pci=nommconf'
   fi
 
-  # set net.ifnames=0 to avoid predictable interface names for opensuse 13.2
+  # OLD: set net.ifnames=0 to avoid predictable interface names for opensuse 13.2
+  # EDIT: always set net.ifnames=0
   if [ "$IMG_VERSION" -ge 132 ] ; then
-    grub_linux_default="${grub_linux_default} net.ifnames=0 quiet systemd.show_status=1"
+    # grub_linux_default="${grub_linux_default} net.ifnames=0 quiet systemd.show_status=1"
+    grub_linux_default="${grub_linux_default} quiet systemd.show_status=1"
   fi
   # set elevator to noop for vserver
   if is_virtual_machine; then

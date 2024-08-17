@@ -77,7 +77,7 @@ generate_config_grub() {
     elevator='elevator=noop'
   fi
 
-  local grub_cmdline_linux='biosdevname=0 crashkernel=auto'
+  local grub_cmdline_linux='biosdevname=0 crashkernel=auto net.ifnames=0'
   is_virtual_machine && grub_cmdline_linux+=' elevator=noop'
   (( USE_KERNEL_MODE_SETTING == 0 )) && grub_linux_default+=' nomodeset'
   grub_cmdline_linux+=' rd.auto=1 consoleblank=0'

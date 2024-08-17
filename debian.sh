@@ -71,7 +71,7 @@ generate_config_grub() {
   local grubdefconf="$FOLD/hdd/etc/default/grub"
 
   # set linux_default in grub
-  local grub_linux_default=''
+  local grub_linux_default='net.ifnames=0 biosdevname=0'
   (( USE_KERNEL_MODE_SETTING == 0 )) && grub_linux_default+='nomodeset '
   grub_linux_default+="consoleblank=0"
   if is_virtual_machine; then
