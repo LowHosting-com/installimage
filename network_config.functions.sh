@@ -864,11 +864,11 @@ setup_network_config() {
     *) return 1;;
   esac
 
-  if ! use_predictable_network_interface_names; then
-    # predictable network interface names are disabled using the net.ifnames=0 kernel parameter
-    # disable_predictable_network_interface_names
-    setup_persistent_net_rules
-  fi
+  # if ! use_predictable_network_interface_names; then
+  #   # predictable network interface names are disabled using the net.ifnames=0 kernel parameter
+  #   # disable_predictable_network_interface_names
+  #   # setup_persistent_net_rules
+  # fi
 }
 
 # get BOOTIF mac from kernel cmdline
@@ -878,14 +878,14 @@ bootif_mac() {
 
 # get bootif via kernel commandline BOOTIF mac
 bootif() {
-  local bootif_mac
-  bootif_mac="$(bootif_mac)"
-  while read network_interface; do
-    [[ "$(network_interface_mac "$network_interface")" == "$bootif_mac" ]] || continue
+  # local bootif_mac
+  # bootif_mac="$(bootif_mac)"
+  # while read network_interface; do
+  #   [[ "$(network_interface_mac "$network_interface")" == "$bootif_mac" ]] || continue
 
-    echo "$network_interface"
-    break
-  done < <(physical_network_interfaces)
+  #   echo "$network_interface"
+  #   break
+  # done < <(physical_network_interfaces)
 }
 
 # get v4 main network interface
