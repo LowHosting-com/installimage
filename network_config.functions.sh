@@ -886,6 +886,7 @@ bootif() {
   #   echo "$network_interface"
   #   break
   # done < <(physical_network_interfaces)
+  return
 }
 
 # get v4 main network interface
