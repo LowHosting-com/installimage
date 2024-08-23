@@ -106,7 +106,7 @@ test "$CRYPT" = "1" && TOTALSTEPS=$(($TOTALSTEPS +1))
 [ "$BTRFS" -eq 1 ] && TOTALSTEPS=$((TOTALSTEPS + 1))
 
 # skipp all deleting process when reusing partioning
-##if [ -z "$REUSE_FSTAB" ] ; then
+if [ -z "$REUSE_FSTAB" ] ; then
   test "$SWRAID" = "1" && TOTALSTEPS=$(($TOTALSTEPS + 1))
   test "$LVM" = "1" && TOTALSTEPS=$(($TOTALSTEPS + 1))
   #
@@ -218,17 +218,17 @@ test "$CRYPT" = "1" && TOTALSTEPS=$(($TOTALSTEPS +1))
   fi
 
   wait_for_udev
-#fi
+fi
 
-#if [ -n "$REUSE_FSTAB" ] ; then
-#  # copy existing fstab to installimage path
-#  cp $REUSE_FSTAB $FOLD/fstab
-#  TOTALSTEPS=$(($TOTALSTEPS - 3))
-#
-#  # reassable raid and lvm
-#  mdadm --assemble --scan 2>&1 | debugoutput
-#  lvscan 2>&1 | debugoutput
-#fi
+if [ -n "$REUSE_FSTAB" ] ; then
+  # copy existing fstab to installimage path
+  cp $REUSE_FSTAB $FOLD/fstab
+  TOTALSTEPS=$(($TOTALSTEPS - 3))
+
+  # reassable raid and lvm
+  mdadm --assemble --scan 2>&1 | debugoutput
+  lvscan 2>&1 | debugoutput
+fi
 
 #
 # Format partitions
