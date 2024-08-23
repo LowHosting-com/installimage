@@ -1885,14 +1885,14 @@ stop_lvm_raid() {
 delete_partitions() {
  if [ "$1" ]; then
 
-for md in $(ls /dev/md[0-9]*); do
-    mdadm --stop $md
-	done
-
-for md in $(ls /dev/md[120-140]*); do
-    mdadm --stop $md
+# Force unmount all raids
+for md in $(ls /dev/md[0-9]* 2>/dev/null); do
+    mdadm --stop $md >/dev/null 2>&1
 done
 
+for md in $(ls /dev/md[120-140]* 2>/dev/null); do
+    mdadm --stop $md >/dev/null 2>&1
+done
 
 
   # Calculate components for mdadm
@@ -2423,9 +2423,9 @@ make_swraid() {
         debug "Array metadata is: '$array_metadata'"
 
         # Clear old superblock (metadata) to prevent conflicts
-        for component in $components; do
-          mdadm --zero-superblock $component
-        done
+        #for component in $components; do
+        #  mdadm --zero-superblock $component
+        #done
 
         yes | mdadm -q -C $raid_device -l$array_raidlevel -n$n $array_metadata $array_layout $can_assume_clean $components --name="md$md_count" --force 2>&1 | debugoutput ; EXITCODE=$?
 
