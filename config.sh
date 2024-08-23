@@ -10,7 +10,7 @@
 DEBUGFILE=/root/debug.txt
 
 export LH_NFSMOUNT="/nfs/"
-export LH_NETINFO=$(curl -s https://lowhosting.com/api/get_network_info.php?REMOTE_ADDR=152.89.254.119)
+export LH_NETINFO=$(curl -s https://lowhosting.com/api/get_network_info.php?REMOTE_ADDR=45.141.57.170)
 
 # set up standard env
 export SCRIPTPATH; SCRIPTPATH=$(dirname $(realpath $0))
