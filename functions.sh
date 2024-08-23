@@ -2159,7 +2159,7 @@ done
      fi
 
      # create partitions as ext3 which results in type 83
-     local FSTYPE="ext3"
+     local FSTYPE="ext4"
      if [ "${PART_FS[$i]}" = "swap" ]; then
        FSTYPE="linux-swap"
      fi
