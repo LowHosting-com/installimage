@@ -1884,6 +1884,12 @@ stop_lvm_raid() {
 # delete_partitions "DRIVE"
 delete_partitions() {
  if [ "$1" ]; then
+ 
+  mdadm --zero-superblock $1p1 2>&1
+  mdadm --zero-superblock $1p2 2>&1
+  mdadm --zero-superblock $1p3 2>&1
+  mdadm --zero-superblock $1p4 2>&1
+ 
   # delete GPT and MBR
   sgdisk -Z "$1" |& debugoutput
 
@@ -2028,9 +2034,6 @@ done
 
 
   sgdisk --zap-all $1 | debugoutput
-  mdadm --zero-superblock $1p1 2>&1 | debugoutput
-  mdadm --zero-superblock $1p2 2>&1 | debugoutput
-  mdadm --zero-superblock $1p3 2>&1 | debugoutput
   wipefs --types raid --force $1 | debugoutput
   dd if=/dev/zero of=$1 bs=1M count=10 status=none |& debugoutput
   hdparm -z $1 |& debugoutput
@@ -4095,15 +4098,6 @@ function part_test_size() {
   if [ "$SWRAID" -eq 0 ]; then
     dev=$DRIVE1
   fi
-  
-#ZERO SUPERBLOCK
-
-  mdadm --zero-superblock $DRIVE1p1 2>&1
-  mdadm --zero-superblock $DRIVE1p2 2>&1
-  mdadm --zero-superblock $DRIVE1p3 2>&1
-  mdadm --zero-superblock $DRIVE1p4 2>&1
-##
-  
   
   local DRIVE_SIZE; DRIVE_SIZE=$(blockdev --getsize64 "$dev")
   DRIVE_SIZE=$(( DRIVE_SIZE / 1024 / 1024 ))
