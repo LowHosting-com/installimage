@@ -754,7 +754,7 @@ if [ -n "$1" ]; then
   # reuse given fstab (path to it) and skip all partioning/raid/etc.
   # EXAMPLE: REUSE_FSTAB /tmp/fstab
   ##REUSE_FSTAB="$(grep -m1 -e ^REUSE_FSTAB "$1" |awk '{print $2}')"
-  ##export REUSE_FSTAB
+  export REUSE_FSTAB
 
   # another configure option: allow usb drives
   # if set to 1: allow usb drives
