@@ -2013,6 +2013,13 @@ create_partitions() {
 
 # Force remove all raids
 for md in $(ls /dev/md[0-9]* 2>/dev/null); do
+    mdadm --stop $md >/dev/null 2>&1
+done
+for md in $(ls /dev/md[120-140]* 2>/dev/null); do
+    mdadm --stop $md >/dev/null 2>&1
+done
+
+for md in $(ls /dev/md[0-9]* 2>/dev/null); do
     mdadm --remove $md >/dev/null 2>&1
 done
 for md in $(ls /dev/md[120-140]* 2>/dev/null); do
