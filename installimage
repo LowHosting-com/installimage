@@ -33,13 +33,13 @@ export EXITCODE=0
 # invalidate all caches, so we get the latest version from nfs
 echo 3 >/proc/sys/vm/drop_caches
 
-#force unmount all raids
-for md in $(ls /dev/md[0-9]*); do
-    mdadm --stop $md 2>&1
+# Force unmount all raids
+for md in $(ls /dev/md[0-9]* 2>/dev/null); do
+    mdadm --stop $md >/dev/null 2>&1
 done
 
-for md in $(ls /dev/md[120-140]*); do
-    mdadm --stop $md 2>&1
+for md in $(ls /dev/md[120-140]* 2>/dev/null); do
+    mdadm --stop $md >/dev/null 2>&1
 done
 
 
