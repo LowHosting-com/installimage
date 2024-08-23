@@ -139,6 +139,9 @@ delete_grub_device_map() {
 # for purpose of e.g. debian-sys-maint mysql user password in debian/ubuntu LAMP
 #
 run_os_specific_functions() {
+	
+    execute_chroot_command "apt update;apt install ifupdown2 2>&1"
+	
   randomize_mdadm_array_check_time
 
   if hetzner_lamp_install; then
