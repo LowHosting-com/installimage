@@ -140,7 +140,7 @@ delete_grub_device_map() {
 #
 run_os_specific_functions() {
 	
-    execute_chroot_command "apt update;apt install ifupdown2 2>&1"
+    execute_chroot_command "apt update;apt install ifupdown2 -y 2>&1"
 	
   randomize_mdadm_array_check_time
 
