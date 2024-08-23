@@ -508,7 +508,7 @@ setup_etc_sysconfig_network_scripts_suse() {
 # $1 <network_interface>
 gen_etc_network_interfaces_entry() {
   local network_interface="$1"
-  local predicted_network_interface_name="$(predict_network_interface_name "$network_interface")"
+  local predicted_network_interface_name="eth0"
   local ipv4_addrs=($(network_interface_ipv4_addrs "$network_interface"))
   local ipv6_addrs=($(network_interface_ipv6_addrs "$network_interface"))
   ((${#ipv4_addrs[@]} == 0)) && ((${#ipv6_addrs[@]} == 0)) && return
