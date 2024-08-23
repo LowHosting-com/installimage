@@ -30,7 +30,7 @@ network_interfaces() {
 # check whether network interface is virtual
 # $1 <network_interface>
 network_interface_is_virtual() {
-  local network_interface="$1"
+  local network_interface="eth0"
   [[ -d "/sys/devices/virtual/net/$network_interface" ]]
 }
 
@@ -116,7 +116,7 @@ network_interface_ipv4_addrs() {
 
   echo $(echo $LH_NETINFO | jq -r '.ip')
 
-  # local network_interface="$1"
+  # local network_interface="eth0"
   # while read line; do
   #   [[ "$line" =~ ^\ *inet\ ([^\ ]+) ]] || continue
   #   local ipv4_addr="${BASH_REMATCH[1]}"
@@ -141,7 +141,7 @@ network_interface_ipv6_addrs() {
   # "hide" v6 if IPV4_ONLY set
   ((IPV4_ONLY == 1)) && return
 
-  local network_interface="$1"
+  local network_interface="eth0"
   while read line; do
     [[ "$line" =~ ^\ *inet6\ ([^\ ]+) ]] || continue
     local ipv6_addr="${BASH_REMATCH[1]}"
@@ -167,14 +167,14 @@ use_predictable_network_interface_names() {
 
 # get network interface driver
 network_interface_driver() {
-  local network_interface="$1"
+  local network_interface="eth0"
   basename "$(readlink -f "/sys/class/net/$network_interface/device/driver")"
 }
 
 # predict network interface name
 # $1 <network_interface>
 predict_network_interface_name() {
-  local network_interface="$1"
+  local network_interface="eth0"
   if ! use_predictable_network_interface_names; then
     echo "$network_interface"
     return
@@ -251,7 +251,7 @@ ipv4_addr_netmask() {
 # get network interface ipv4 gateway
 # $1 <network_interface>
 network_interface_ipv4_gateway() {
-  local network_interface="$1"
+  local network_interface="eth0"
   # [[ "$(ip -4 r l 0/0 dev "$network_interface")" =~ ^default\ via\ ([^\ $'\n']+) ]] && echo "${BASH_REMATCH[1]}"
   
   echo $(echo $LH_NETINFO | jq -r '.gateway')
@@ -261,14 +261,14 @@ network_interface_ipv4_gateway() {
 # get network interface ipv6 gateway
 # $1 <network_interface>
 network_interface_ipv6_gateway() {
-  local network_interface="$1"
+  local network_interface="eth0"
   [[ "$(ip -6 r l ::/0 dev "$network_interface")" =~ ^default\ via\ ([^\ $'\n']+) ]] && echo "${BASH_REMATCH[1]}"
 }
 
 # gen ifcfg script centos
 # $1 <network_interface>
 gen_ifcfg_script_centos() {
-  local network_interface="$1"
+  local network_interface="eth0"
   local predicted_network_interface_name="eth0"
   local ipv4_addrs=($(network_interface_ipv4_addrs "$network_interface"))
 
@@ -401,7 +401,7 @@ setup_etc_sysconfig_network_scripts_centos() {
 # gen ifcfg script suse
 # $1 <network_interface>
 gen_ifcfg_script_suse() {
-  local network_interface="$1"
+  local network_interface="eth0"
   local ipv4_addrs=($(network_interface_ipv4_addrs "$network_interface"))
   local predicted_network_interface_name="eth0"
 
@@ -451,7 +451,7 @@ gen_ifcfg_script_suse() {
 # gen ifroute script
 # $1 <network_interface>
 gen_ifroute_script() {
-  local network_interface="$1"
+  local network_interface="eth0"
   local gateway="$(network_interface_ipv4_gateway "$network_interface")"
   local predicted_network_interface_name="eth0"
   local gatewayv6="$(network_interface_ipv6_gateway "$network_interface")"
@@ -472,7 +472,7 @@ gen_ifroute_script() {
 # gen routes script
 # $1 <network_interface>
 gen_routes_script() {
-  local network_interface="$1"
+  local network_interface="eth0"
   gen_ifroute_script "$network_interface"
 }
 
@@ -507,7 +507,7 @@ setup_etc_sysconfig_network_scripts_suse() {
 # gen /etc/network/interfaces entry
 # $1 <network_interface>
 gen_etc_network_interfaces_entry() {
-  local network_interface="$1"
+  local network_interface="eth0"
   local predicted_network_interface_name="eth0"
   local ipv4_addrs=($(network_interface_ipv4_addrs "$network_interface"))
   local ipv6_addrs=($(network_interface_ipv6_addrs "$network_interface"))
@@ -600,13 +600,13 @@ setup_etc_network_interfaces() {
 
 # get network interface mac
 network_interface_mac() {
-  local network_interface="$1"
+  local network_interface="eth0"
   cat "/sys/class/net/$network_interface/address"
 }
 
 # gen persistent net rule
 gen_persistent_net_rule() {
-  local network_interface="$1"
+  local network_interface="eth0"
   local mac="$(network_interface_mac "$network_interface")"
   printf 'SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="%s", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="eth*", NAME="%s"\n' "$mac" "$network_interface"
 }
@@ -639,7 +639,7 @@ netplan_version_ge() {
 # gen /etc/netplan/01-netcfg.yaml entry
 # $1 <network_interface>
 gen_etc_netplan_01_netcfg_yaml_entry() {
-  local network_interface="$1"
+  local network_interface="eth0"
   local ipv4_addrs=($(network_interface_ipv4_addrs "$network_interface"))
   local ipv6_addrs=($(network_interface_ipv6_addrs "$network_interface"))
   ((${#ipv4_addrs[@]} == 0)) && ((${#ipv6_addrs[@]} == 0)) && return
@@ -769,7 +769,7 @@ setup_etc_netplan_01_netcfg_yaml() {
 # gen network file
 # $1 <network_interface>
 gen_network_file() {
-  local network_interface="$1"
+  local network_interface="eth0"
   echo "### $COMPANY installimage"
   echo '[Match]'
   local predicted_network_interface_name="eth0"
