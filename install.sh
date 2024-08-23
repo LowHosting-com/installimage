@@ -388,8 +388,7 @@ fi
 if [ "$SWRAID" = "1" ]; then
   status_busy_nostep "  Generating mdadm config"
   debug "# Generating mdadm configuration"
-  #generate_config_mdadm "NIL" || status_failed
-  generate_config_mdadm "NIL"
+  generate_config_mdadm "NIL" || status_failed
   status_done
 fi
 
