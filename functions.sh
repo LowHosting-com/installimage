@@ -2011,7 +2011,7 @@ create_partitions() {
   dmsetup remove_all 2>&1 | debugoutput
   if command -v dmraid &> /dev/null; then dmraid -a no 2>&1 | debugoutput; fi
 
-# Force unmount all raids
+# Force remove all raids
 for md in $(ls /dev/md[0-9]* 2>/dev/null); do
     mdadm --remove $md >/dev/null 2>&1
 done
