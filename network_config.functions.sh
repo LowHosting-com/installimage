@@ -23,14 +23,14 @@ network_interfaces() {
   #   echo "${file##*/}"
   # done
 
-  # assume we are configuring only a single network interface named eth0
-  echo "eth0"
+  # assume we are configuring only a single network interface named eth1
+  echo "eth1"
 }
 
 # check whether network interface is virtual
 # $1 <network_interface>
 network_interface_is_virtual() {
-  local network_interface="eth0"
+  local network_interface="eth1"
   [[ -d "/sys/devices/virtual/net/$network_interface" ]]
 }
 
@@ -116,7 +116,7 @@ network_interface_ipv4_addrs() {
 
   echo $(echo $LH_NETINFO | jq -r '.ip')
 
-  # local network_interface="eth0"
+  # local network_interface="eth1"
   # while read line; do
   #   [[ "$line" =~ ^\ *inet\ ([^\ ]+) ]] || continue
   #   local ipv4_addr="${BASH_REMATCH[1]}"
@@ -126,6 +126,12 @@ network_interface_ipv4_addrs() {
   #   ipv4_addr_is_reserved_for_future_use "$ipv4_addr" && continue
   #   echo "$ipv4_addr"
   # done < <(ip -4 a s "$network_interface")
+}
+
+
+network_interface_get_vlan_id() {
+
+  echo $(echo $LH_NETINFO | jq -r '.vlan_id')
 }
 
 # check whether ipv6 addr is a link local unicast addr
@@ -141,7 +147,7 @@ network_interface_ipv6_addrs() {
   # "hide" v6 if IPV4_ONLY set
   ((IPV4_ONLY == 1)) && return
 
-  local network_interface="eth0"
+  local network_interface="eth1"
   while read line; do
     [[ "$line" =~ ^\ *inet6\ ([^\ ]+) ]] || continue
     local ipv6_addr="${BASH_REMATCH[1]}"
@@ -167,14 +173,14 @@ use_predictable_network_interface_names() {
 
 # get network interface driver
 network_interface_driver() {
-  local network_interface="eth0"
+  local network_interface="eth1"
   basename "$(readlink -f "/sys/class/net/$network_interface/device/driver")"
 }
 
 # predict network interface name
 # $1 <network_interface>
 predict_network_interface_name() {
-  local network_interface="eth0"
+  local network_interface="eth1"
   if ! use_predictable_network_interface_names; then
     echo "$network_interface"
     return
@@ -251,7 +257,7 @@ ipv4_addr_netmask() {
 # get network interface ipv4 gateway
 # $1 <network_interface>
 network_interface_ipv4_gateway() {
-  local network_interface="eth0"
+  local network_interface="eth1"
   # [[ "$(ip -4 r l 0/0 dev "$network_interface")" =~ ^default\ via\ ([^\ $'\n']+) ]] && echo "${BASH_REMATCH[1]}"
   
   echo $(echo $LH_NETINFO | jq -r '.gateway')
@@ -261,26 +267,26 @@ network_interface_ipv4_gateway() {
 # get network interface ipv6 gateway
 # $1 <network_interface>
 network_interface_ipv6_gateway() {
-  local network_interface="eth0"
+  local network_interface="eth1"
   [[ "$(ip -6 r l ::/0 dev "$network_interface")" =~ ^default\ via\ ([^\ $'\n']+) ]] && echo "${BASH_REMATCH[1]}"
 }
 
 # gen ifcfg script centos
 # $1 <network_interface>
 gen_ifcfg_script_centos() {
-  local network_interface="eth0"
-  local predicted_network_interface_name="eth0"
+  local network_interface="eth1"
+  local static_network_interface_name="eth1"
   local ipv4_addrs=($(network_interface_ipv4_addrs "$network_interface"))
 
   echo "### $COMPANY installimage"
   echo
-  echo "DEVICE=$predicted_network_interface_name"
+  echo "DEVICE=$static_network_interface_name"
   echo 'ONBOOT=yes'
   echo -n 'BOOTPROTO='
   # dhcp
   local gateway="$(network_interface_ipv4_gateway "$network_interface")"
   if ipv4_addr_is_private "$gateway" && is_virtual_machine; then
-    echo "configuring dhcpv4 for $predicted_network_interface_name" >&2
+    echo "configuring dhcpv4 for $static_network_interface_name" >&2
     echo 'dhcp'
   # static config
   else
@@ -299,7 +305,7 @@ gen_ifcfg_script_centos() {
         local netmask='32'
       fi
 
-      echo "configuring ipv4 addr ${ipv4_addrs[0]} for $predicted_network_interface_name" >&2
+      echo "configuring ipv4 addr ${ipv4_addrs[0]} for $static_network_interface_name" >&2
       echo "IPADDR=$address"
       echo "PREFIX=$netmask"
       if [[ -n "$gateway" ]]; then
@@ -312,7 +318,7 @@ gen_ifcfg_script_centos() {
           echo "SCOPE=\"peer $gateway\""
         # ! pointtopoint
         else
-          echo "configuring ipv4 gateway $gateway for $predicted_network_interface_name" >&2
+          echo "configuring ipv4 gateway $gateway for $static_network_interface_name" >&2
           echo "GATEWAY=$gateway"
         fi
       fi
@@ -335,7 +341,7 @@ gen_ifcfg_script_centos() {
   local ipv6_addrs=($(network_interface_ipv6_addrs "$network_interface"))
   ((${#ipv6_addrs[@]} == 0)) && return
 
-  echo "configuring ipv6 addr ${ipv6_addrs[0]} for $predicted_network_interface_name" >&2
+  echo "configuring ipv6 addr ${ipv6_addrs[0]} for $static_network_interface_name" >&2
   echo
   echo 'IPV6INIT=yes'
   echo "IPV6ADDR=${ipv6_addrs[0]}"
@@ -344,13 +350,13 @@ gen_ifcfg_script_centos() {
   local gatewayv6="$(network_interface_ipv6_gateway "$network_interface")"
   [[ -z "$gatewayv6" ]] && return
 
-  echo "configuring ipv6 gateway $gatewayv6 for $predicted_network_interface_name" >&2
+  echo "configuring ipv6 gateway $gatewayv6 for $static_network_interface_name" >&2
   echo "IPV6_DEFAULTGW=$gatewayv6"
 
   echo 'IPV6_DEFROUTE=yes'
 
   # Without NetworkManager IPV6_DEFAULTDEV is required
-  uses_network_manager || echo "IPV6_DEFAULTDEV=$predicted_network_interface_name"
+  uses_network_manager || echo "IPV6_DEFAULTDEV=$static_network_interface_name"
 }
 
 # gen route script
@@ -377,8 +383,8 @@ setup_etc_sysconfig_network_scripts_centos() {
     local ip_addrs=("${ipv4_addrs[@]}" $(network_interface_ipv6_addrs "$network_interface"))
     ((${#ip_addrs[@]} == 0)) && continue
 
-    local predicted_network_interface_name="eth0"
-    local ifcfg_script="/etc/sysconfig/network-scripts/ifcfg-$predicted_network_interface_name"
+    local static_network_interface_name="eth1"
+    local ifcfg_script="/etc/sysconfig/network-scripts/ifcfg-$static_network_interface_name"
 
     debug "# setting up $ifcfg_script"
     gen_ifcfg_script_centos "$network_interface" > "$FOLD/hdd/$ifcfg_script" 2> >(debugoutput)
@@ -392,7 +398,7 @@ setup_etc_sysconfig_network_scripts_centos() {
     # dont create route script for centos 8
     ((IMG_VERSION >= 80)) && ((IMG_VERSION != 610)) && ! is_cpanel_install && return
 
-    local route_script="/etc/sysconfig/network-scripts/route-$predicted_network_interface_name"
+    local route_script="/etc/sysconfig/network-scripts/route-$static_network_interface_name"
     debug "# setting up $route_script"
     gen_route_script "$gateway" > "$FOLD/hdd/$route_script" 2> >(debugoutput)
   done < <(physical_network_interfaces)
@@ -401,9 +407,9 @@ setup_etc_sysconfig_network_scripts_centos() {
 # gen ifcfg script suse
 # $1 <network_interface>
 gen_ifcfg_script_suse() {
-  local network_interface="eth0"
+  local network_interface="eth1"
   local ipv4_addrs=($(network_interface_ipv4_addrs "$network_interface"))
-  local predicted_network_interface_name="eth0"
+  local static_network_interface_name="eth1"
 
   echo "### $COMPANY installimage"
   echo
@@ -411,7 +417,7 @@ gen_ifcfg_script_suse() {
   # dhcp
   local gateway="$(network_interface_ipv4_gateway "$network_interface")"
   if ipv4_addr_is_private "$gateway" && is_virtual_machine; then
-    echo "configuring dhcpv4 for $predicted_network_interface_name" >&2
+    echo "configuring dhcpv4 for $static_network_interface_name" >&2
     echo 'BOOTPROTO="dhcp4"'
     echo 'DHCLIENT_SET_HOSTNAME="no"'
   # static config
@@ -425,7 +431,7 @@ gen_ifcfg_script_suse() {
       else
         local netmask='32'
       fi
-      echo "configuring ipv4 addr $ipaddr/$netmask for $predicted_network_interface_name" >&2
+      echo "configuring ipv4 addr $ipaddr/$netmask for $static_network_interface_name" >&2
       echo "IPADDR=\"$ipaddr/$netmask\""
 
       # pointtopoint
@@ -441,7 +447,7 @@ gen_ifcfg_script_suse() {
   local ipv6_addrs=($(network_interface_ipv6_addrs "$network_interface"))
   ((${#ipv6_addrs[@]} == 0)) && return
 
-  echo "configuring ipv6 addr ${ipv6_addrs[0]} for $predicted_network_interface_name" >&2
+  echo "configuring ipv6 addr ${ipv6_addrs[0]} for $static_network_interface_name" >&2
   echo
   echo -n 'IPADDR'
   ((${#ipv4_addrs[@]} > 0)) && echo -n '_0'
@@ -451,9 +457,9 @@ gen_ifcfg_script_suse() {
 # gen ifroute script
 # $1 <network_interface>
 gen_ifroute_script() {
-  local network_interface="eth0"
+  local network_interface="eth1"
   local gateway="$(network_interface_ipv4_gateway "$network_interface")"
-  local predicted_network_interface_name="eth0"
+  local static_network_interface_name="eth1"
   local gatewayv6="$(network_interface_ipv6_gateway "$network_interface")"
 
   echo "### $COMPANY installimage"
@@ -461,18 +467,18 @@ gen_ifroute_script() {
   # static config
   local gateway="$(network_interface_ipv4_gateway "$network_interface")"
   if [[ -n "$gateway" ]] && ! ipv4_addr_is_private "$gateway" || ! is_virtual_machine; then
-    echo "configuring ipv4 gateway $gateway for $predicted_network_interface_name" >&2
-    echo "default $gateway - $predicted_network_interface_name"
+    echo "configuring ipv4 gateway $gateway for $static_network_interface_name" >&2
+    echo "default $gateway - $static_network_interface_name"
   fi
   [[ -z "$gatewayv6" ]] && return
-  echo "configuring ipv6 gateway $gatewayv6 for $predicted_network_interface_name" >&2
-  echo "default $gatewayv6 - $predicted_network_interface_name"
+  echo "configuring ipv6 gateway $gatewayv6 for $static_network_interface_name" >&2
+  echo "default $gatewayv6 - $static_network_interface_name"
 }
 
 # gen routes script
 # $1 <network_interface>
 gen_routes_script() {
-  local network_interface="eth0"
+  local network_interface="eth1"
   gen_ifroute_script "$network_interface"
 }
 
@@ -488,13 +494,13 @@ setup_etc_sysconfig_network_scripts_suse() {
     local ip_addrs=("${ipv4_addrs[@]}" $(network_interface_ipv6_addrs "$network_interface"))
     ((${#ip_addrs[@]} == 0)) && continue
 
-    local predicted_network_interface_name="eth0"
-    local ifcfg_script="/etc/sysconfig/network/ifcfg-$predicted_network_interface_name"
+    local static_network_interface_name="eth1"
+    local ifcfg_script="/etc/sysconfig/network/ifcfg-$static_network_interface_name"
 
     debug "# setting up $ifcfg_script"
     gen_ifcfg_script_suse "$network_interface" > "$FOLD/hdd/$ifcfg_script" 2> >(debugoutput)
 
-    # local route_script="/etc/sysconfig/network/ifroute-$predicted_network_interface_name"
+    # local route_script="/etc/sysconfig/network/ifroute-$static_network_interface_name"
     local routes_script="/etc/sysconfig/network/routes"
 
     # debug "# setting up $route_script"
@@ -507,32 +513,42 @@ setup_etc_sysconfig_network_scripts_suse() {
 # gen /etc/network/interfaces entry
 # $1 <network_interface> 
 gen_etc_network_interfaces_entry() { #DEBIAN/UBUNTU
-  local network_interface="eth0"
-  local predicted_network_interface_name="eth0"
+  local vlan_id=($(network_interface_get_vlan_id))
+
+if [ "$vlan_id" -ne 0 ]; then
+#VLAN ID IS SET
+
+
+  local network_interface="eth1"
+  local static_network_interface_name="eth1"
   local ipv4_addrs=($(network_interface_ipv4_addrs "$network_interface"))
   local ipv6_addrs=($(network_interface_ipv6_addrs "$network_interface"))
   ((${#ipv4_addrs[@]} == 0)) && ((${#ipv6_addrs[@]} == 0)) && return
 
+#STATIC INTERFACE
+echo
+echo "auto eth0"
+echo "iface eth0 inet manual"
   echo
-  echo "auto $predicted_network_interface_name"
+  echo "auto $static_network_interface_name"
   if ((${#ipv4_addrs[@]} > 0)); then
-    echo -n "iface $predicted_network_interface_name inet "
+    echo -n "iface $static_network_interface_name inet "
     # dhcp
     local gateway="$(network_interface_ipv4_gateway "$network_interface")"
     if ipv4_addr_is_private "$gateway" && is_virtual_machine; then
-      echo "configuring dhcpv4 for $predicted_network_interface_name" >&2
+      echo "configuring dhcpv4 for $static_network_interface_name" >&2
       echo 'dhcp'
-    # static config
+	  # static config
     else
       local address="$(ip_addr_without_suffix "${ipv4_addrs[0]}")"
       local netmask="$(ipv4_addr_netmask "${ipv4_addrs[0]}")"
 
-      echo "configuring ipv4 addr ${ipv4_addrs[0]} for $predicted_network_interface_name" >&2
+      echo "configuring ipv4 addr ${ipv4_addrs[0]} for $static_network_interface_name" >&2
       echo 'static'
       echo "  address $address"
       echo "  netmask $netmask"
       if [[ -n "$gateway" ]]; then
-        echo "configuring ipv4 gateway $gateway for $predicted_network_interface_name" >&2
+        echo "configuring ipv4 gateway $gateway for $static_network_interface_name" >&2
         echo "  gateway $gateway"
       fi
       # pointtopoint
@@ -540,10 +556,10 @@ gen_etc_network_interfaces_entry() { #DEBIAN/UBUNTU
         local network="$(ipv4_addr_network "${ipv4_addrs[0]}")"
         echo "configuring host route $network via $gateway" >&2
         echo "  # route $network via $gateway"
-        # echo "  up ip route add $network via $gateway dev $predicted_network_interface_name"
+        # echo "  up ip route add $network via $gateway dev $static_network_interface_name"
 
         local network_without_suffix="$(ip_addr_without_suffix "$network")"
-        echo "  up route add -net $network_without_suffix netmask $netmask gw $gateway dev $predicted_network_interface_name"
+        echo "  up route add -net $network_without_suffix netmask $netmask gw $gateway dev $static_network_interface_name"
       fi
     fi
   fi
@@ -556,14 +572,90 @@ gen_etc_network_interfaces_entry() { #DEBIAN/UBUNTU
   local netmaskv6="$(ip_addr_suffix "${ipv6_addrs[0]}")"
   local gatewayv6="$(network_interface_ipv6_gateway "$network_interface")"
 
-  echo "configuring ipv6 addr ${ipv6_addrs[0]} for $predicted_network_interface_name" >&2
-  echo "iface $predicted_network_interface_name inet6 static"
+  echo "configuring ipv6 addr ${ipv6_addrs[0]} for $static_network_interface_name" >&2
+  echo "iface $static_network_interface_name inet6 static"
   echo "  address $addressv6"
   echo "  netmask $netmaskv6"
   if [[ -n "$gatewayv6" ]]; then
-    echo "configuring ipv6 gateway $gatewayv6 for $predicted_network_interface_name" >&2
+    echo "configuring ipv6 gateway $gatewayv6 for $static_network_interface_name" >&2
     echo "  gateway $gatewayv6"
   fi
+
+
+
+
+
+####END VLAN CONFIG
+
+
+
+
+
+
+
+
+else
+  local network_interface="eth0"
+  local static_network_interface_name="eth0"
+  local ipv4_addrs=($(network_interface_ipv4_addrs "$network_interface"))
+  local ipv6_addrs=($(network_interface_ipv6_addrs "$network_interface"))
+  ((${#ipv4_addrs[@]} == 0)) && ((${#ipv6_addrs[@]} == 0)) && return
+
+  echo
+  echo "auto $static_network_interface_name"
+  if ((${#ipv4_addrs[@]} > 0)); then
+    echo -n "iface $static_network_interface_name inet "
+    # dhcp
+    local gateway="$(network_interface_ipv4_gateway "$network_interface")"
+    if ipv4_addr_is_private "$gateway" && is_virtual_machine; then
+      echo "configuring dhcpv4 for $static_network_interface_name" >&2
+      echo 'dhcp'
+    # static config
+    else
+      local address="$(ip_addr_without_suffix "${ipv4_addrs[0]}")"
+      local netmask="$(ipv4_addr_netmask "${ipv4_addrs[0]}")"
+
+      echo "configuring ipv4 addr ${ipv4_addrs[0]} for $static_network_interface_name" >&2
+      echo 'static'
+      echo "  address $address"
+      echo "  netmask $netmask"
+      if [[ -n "$gateway" ]]; then
+        echo "configuring ipv4 gateway $gateway for $static_network_interface_name" >&2
+        echo "  gateway $gateway"
+      fi
+      # pointtopoint
+      if ! ipv4_addr_is_private "$gateway" && ! is_virtual_machine; then
+        local network="$(ipv4_addr_network "${ipv4_addrs[0]}")"
+        echo "configuring host route $network via $gateway" >&2
+        echo "  # route $network via $gateway"
+        # echo "  up ip route add $network via $gateway dev $static_network_interface_name"
+
+        local network_without_suffix="$(ip_addr_without_suffix "$network")"
+        echo "  up route add -net $network_without_suffix netmask $netmask gw $gateway dev $static_network_interface_name"
+      fi
+    fi
+  fi
+
+  ((${#ipv6_addrs[@]} == 0)) && return
+
+  ((${#ipv4_addrs[@]} > 0)) && echo
+
+  local addressv6="$(ip_addr_without_suffix "${ipv6_addrs[0]}")"
+  local netmaskv6="$(ip_addr_suffix "${ipv6_addrs[0]}")"
+  local gatewayv6="$(network_interface_ipv6_gateway "$network_interface")"
+
+  echo "configuring ipv6 addr ${ipv6_addrs[0]} for $static_network_interface_name" >&2
+  echo "iface $static_network_interface_name inet6 static"
+  echo "  address $addressv6"
+  echo "  netmask $netmaskv6"
+  if [[ -n "$gatewayv6" ]]; then
+    echo "configuring ipv6 gateway $gatewayv6 for $static_network_interface_name" >&2
+    echo "  gateway $gatewayv6"
+  fi
+fi
+
+ 
+
 }
 
 # setup /etc/network/interfaces
@@ -600,13 +692,13 @@ setup_etc_network_interfaces() {
 
 # get network interface mac
 network_interface_mac() {
-  local network_interface="eth0"
+  local network_interface="eth1"
   cat "/sys/class/net/$network_interface/address"
 }
 
 # gen persistent net rule
 gen_persistent_net_rule() {
-  local network_interface="eth0"
+  local network_interface="eth1"
   local mac="$(network_interface_mac "$network_interface")"
   printf 'SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="%s", ATTR{dev_id}=="0x0", ATTR{type}=="1", KERNEL=="eth*", NAME="%s"\n' "$mac" "$network_interface"
 }
@@ -639,18 +731,18 @@ netplan_version_ge() {
 # gen /etc/netplan/01-netcfg.yaml entry
 # $1 <network_interface>
 gen_etc_netplan_01_netcfg_yaml_entry() {
-  local network_interface="eth0"
+  local network_interface="eth1"
   local ipv4_addrs=($(network_interface_ipv4_addrs "$network_interface"))
   local ipv6_addrs=($(network_interface_ipv6_addrs "$network_interface"))
   ((${#ipv4_addrs[@]} == 0)) && ((${#ipv6_addrs[@]} == 0)) && return
-  local predicted_network_interface_name="eth0"
-  echo "    $predicted_network_interface_name:"
+  local static_network_interface_name="eth1"
+  echo "    $static_network_interface_name:"
   local addresses=()
   if ((${#ipv4_addrs[@]} > 0)); then
     # dhcp
     local gateway4="$(network_interface_ipv4_gateway "$network_interface")"
     if ipv4_addr_is_private "$gateway4" && is_virtual_machine; then
-      echo "configuring dhcpv4 for $predicted_network_interface_name" >&2
+      echo "configuring dhcpv4 for $static_network_interface_name" >&2
       local dhcp4=true
       local gateway4=false
     # static config
@@ -667,18 +759,18 @@ gen_etc_netplan_01_netcfg_yaml_entry() {
           local netmask="$(ip_addr_suffix "${ipv4_addrs[0]}")"
         fi
       fi
-      echo "configuring ipv4 addr $ipaddr/$netmask for $predicted_network_interface_name" >&2
+      echo "configuring ipv4 addr $ipaddr/$netmask for $static_network_interface_name" >&2
       local dhcp4=false
       addresses+=("$ipaddr/$netmask")
       if [[ -n "$gateway4" ]]; then
-        echo "configuring ipv4 gateway $gateway4 for $predicted_network_interface_name" >&2
+        echo "configuring ipv4 gateway $gateway4 for $static_network_interface_name" >&2
       else
         gateway4=false
       fi
     fi
   fi
   if ((${#ipv6_addrs[@]} > 0)); then
-    echo "configuring ipv6 addr ${ipv6_addrs[0]} for $predicted_network_interface_name" >&2
+    echo "configuring ipv6 addr ${ipv6_addrs[0]} for $static_network_interface_name" >&2
     addresses+=("${ipv6_addrs[0]}")
   fi
   case "${#addresses[@]}" in
@@ -714,7 +806,7 @@ gen_etc_netplan_01_netcfg_yaml_entry() {
         fi
       fi
       if [[ -n "$gateway6" ]]; then
-        echo "configuring ipv6 gateway $gateway6 for $predicted_network_interface_name" >&2
+        echo "configuring ipv6 gateway $gateway6 for $static_network_interface_name" >&2
         echo '        - to: default'
         echo "          via: $gateway6"
       fi
@@ -732,7 +824,7 @@ gen_etc_netplan_01_netcfg_yaml_entry() {
       fi
       local gateway6="$(network_interface_ipv6_gateway "$network_interface")"
       if [[ -n "$gateway6" ]]; then
-        echo "configuring ipv6 gateway $gateway6 for $predicted_network_interface_name" >&2
+        echo "configuring ipv6 gateway $gateway6 for $static_network_interface_name" >&2
         echo "      gateway6: $gateway6"
       fi
     fi
@@ -769,11 +861,11 @@ setup_etc_netplan_01_netcfg_yaml() {
 # gen network file
 # $1 <network_interface>
 gen_network_file() {
-  local network_interface="eth0"
+  local network_interface="eth1"
   echo "### $COMPANY installimage"
   echo '[Match]'
-  local predicted_network_interface_name="eth0"
-  echo "Name=$predicted_network_interface_name"
+  local static_network_interface_name="eth1"
+  echo "Name=$static_network_interface_name"
   echo
   echo '[Network]'
   local ipv4_addrs=($(network_interface_ipv4_addrs "$network_interface"))
@@ -781,7 +873,7 @@ gen_network_file() {
   if ((${#ipv4_addrs[@]} > 0)); then
     # dhcp
     if ipv4_addr_is_private "$gateway" && is_virtual_machine; then
-      echo "configuring dhcpv4 for $predicted_network_interface_name" >&2
+      echo "configuring dhcpv4 for $static_network_interface_name" >&2
       echo 'DHCP=ipv4'
     # static config
     else
@@ -819,8 +911,8 @@ setup_etc_systemd_network_files() {
     local ipv4_addrs=($(network_interface_ipv4_addrs "$network_interface"))
     local ip_addrs=("${ipv4_addrs[@]}" $(network_interface_ipv6_addrs "$network_interface"))
     ((${#ip_addrs[@]} == 0)) && continue
-    local predicted_network_interface_name="eth0"
-    local network_file="/etc/systemd/network/10-$predicted_network_interface_name.network"
+    local static_network_interface_name="eth1"
+    local network_file="/etc/systemd/network/10-$static_network_interface_name.network"
     debug "# setting up $network_file"
     gen_network_file "$network_interface" > "$FOLD/hdd/$network_file" 2> >(debugoutput)
   done < <(physical_network_interfaces)
