@@ -4029,18 +4029,19 @@ function hdinfo() {
 # function to check if we are in a kvm-qemu vServer environment
 # returns 0 if we are in a vServer env otherwise 1
 function is_virtual_machine() {
-   case "$SYSTYPE" in
-    vServer|Bochs|Xen|KVM|VirtualBox|'VMware,Inc.')
-      return 0;;
-    *)
-      case "$SYSMFC" in
-      	QEMU)
-          return 0;;
-        *)
-          return 1;;
-      esac
-      return 1;;
-    esac
+#   case "$SYSTYPE" in
+#    vServer|Bochs|Xen|KVM|VirtualBox|'VMware,Inc.')
+#      return 0;;
+#    *)
+#      case "$SYSMFC" in
+#      	QEMU)
+#          return 0;;
+#        *)
+#          return 1;;
+#      esac
+#      return 1;;
+#    esac
+return 1;;
 }
 
 # function to check if we have to use GPT or MS-DOS partition tables
