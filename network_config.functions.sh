@@ -551,6 +551,8 @@ echo "iface eth0 inet manual"
         echo "configuring ipv4 gateway $gateway for $static_network_interface_name" >&2
         echo "  gateway $gateway"
       fi
+	  echo "vlan-id $vlan_id"
+	  echo "vlan-raw-device eth0"
       # pointtopoint
       if ! ipv4_addr_is_private "$gateway" && ! is_virtual_machine; then
         local network="$(ipv4_addr_network "${ipv4_addrs[0]}")"
