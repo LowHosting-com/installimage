@@ -1885,6 +1885,16 @@ stop_lvm_raid() {
 delete_partitions() {
  if [ "$1" ]; then
 
+for md in $(ls /dev/md[0-9]*); do
+    mdadm --stop $md
+	done
+
+for md in $(ls /dev/md[120-140]*); do
+    mdadm --stop $md
+done
+
+
+
   # Calculate components for mdadm
   components=$(lsblk -nr -o NAME "$1" | awk '{print "/dev/" $1}')
 
