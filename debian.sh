@@ -139,8 +139,11 @@ delete_grub_device_map() {
 # for purpose of e.g. debian-sys-maint mysql user password in debian/ubuntu LAMP
 #
 run_os_specific_functions() {
-	
-    execute_chroot_command "apt update;apt install ifupdown2 -y 2>&1"
+
+  sed -i '/hetzner/d' "$FOLD/hdd/etc/apt/sources.list"
+  rm -fr "$FOLD/hdd/etc/apt/sources.list.d/hetzner*"
+  
+  execute_chroot_command "apt update;apt install ifupdown2 -y 2>&1"
 	
   randomize_mdadm_array_check_time
 
