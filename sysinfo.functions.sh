@@ -42,9 +42,14 @@ drive_disk_by_id_path() {
   done
 }
 
-board_vendor() { cat /sys/class/dmi/id/board_vendor; }
 
-board_name() { cat /sys/class/dmi/id/board_name; }
+#board_vendor() { cat /sys/class/dmi/id/board_vendor; }
+
+#board_name() { cat /sys/class/dmi/id/board_name; }
+
+board_vendor() { echo "LowHosting"; }
+
+board_name() { echo "Model1"; }
 
 has_fujitsu_board() {
   [[ "$(board_vendor)" == FUJITSU ]]
