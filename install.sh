@@ -127,6 +127,7 @@ if [ -z "$REUSE_FSTAB" ] ; then
     echo ""
     exit 1
   fi
+  
 
   stop_lvm_raid ; EXITCODE=$?
   if [ $EXITCODE -ne 0 ] ; then
@@ -387,7 +388,8 @@ fi
 if [ "$SWRAID" = "1" ]; then
   status_busy_nostep "  Generating mdadm config"
   debug "# Generating mdadm configuration"
-  generate_config_mdadm "NIL" || status_failed
+  #generate_config_mdadm "NIL" || status_failed
+  generate_config_mdadm "NIL"
   status_done
 fi
 
