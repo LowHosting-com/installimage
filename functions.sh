@@ -2011,6 +2011,9 @@ create_partitions() {
   dmsetup remove_all 2>&1 | debugoutput
   if command -v dmraid &> /dev/null; then dmraid -a no 2>&1 | debugoutput; fi
 
+  sgdisk --zap-all $1 | debugoutput
+  mdadm --zero-superblock $1 | debugoutput
+  wipefs --types raid --force $1 | debugoutput
   dd if=/dev/zero of=$1 bs=1M count=10 status=none |& debugoutput
   hdparm -z $1 |& debugoutput
 
