@@ -2028,7 +2028,9 @@ done
 
 
   sgdisk --zap-all $1 | debugoutput
-  mdadm --zero-superblock $1 2>&1 | debugoutput
+  mdadm --zero-superblock $1p1 2>&1 | debugoutput
+  mdadm --zero-superblock $1p2 2>&1 | debugoutput
+  mdadm --zero-superblock $1p3 2>&1 | debugoutput
   wipefs --types raid --force $1 | debugoutput
   dd if=/dev/zero of=$1 bs=1M count=10 status=none |& debugoutput
   hdparm -z $1 |& debugoutput
