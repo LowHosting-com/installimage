@@ -1885,7 +1885,8 @@ stop_lvm_raid() {
 delete_partitions() {
  if [ "$1" ]; then
  
- 
+
+		
 # Force remove all raids
 for md in $(ls /dev/md[0-9]* 2>/dev/null); do
     mdadm --stop $md >/dev/null 2>&1
@@ -1901,10 +1902,25 @@ for md in $(ls /dev/md[120-140]* 2>/dev/null); do
     mdadm --remove $md >/dev/null 2>&1
 done
 
-  mdadm --zero-superblock $1p1 2>&1
-  mdadm --zero-superblock $1p2 2>&1
-  mdadm --zero-superblock $1p3 2>&1
-  mdadm --zero-superblock $1p4 2>&1
+
+        local components=""
+        local n=0
+        for n in $(seq 1 $COUNT_DRIVES) ; do
+          TARGETDISK="$(eval echo \$DRIVE${n})"
+          local p; p=""
+          local nvme; nvme="$(echo $TARGETDISK | grep nvme)"
+          [ -n "$nvme" ] && p='p'
+          local disk_by; disk_by="$(echo $TARGETDISK | grep '^/dev/disk/by-')"
+          [ -n "$disk_by" ] && p='-part'
+
+          components="$components $TARGETDISK$p$PARTNUM"
+        done
+		
+		
+        for component in $components; do
+          mdadm --zero-superblock $component
+        done
+
  
   # delete GPT and MBR
   sgdisk -Z "$1" |& debugoutput
@@ -2425,9 +2441,9 @@ make_swraid() {
         debug "Array metadata is: '$array_metadata'"
 
         # Clear old superblock (metadata) to prevent conflicts
-        for component in $components; do
-          mdadm --zero-superblock $component
-        done
+        #for component in $components; do
+        #  mdadm --zero-superblock $component
+        #done
 
         yes | mdadm -q -C $raid_device -l$array_raidlevel -n$n $array_metadata $array_layout $can_assume_clean $components --name="md$md_count" --force 2>&1 | debugoutput ; EXITCODE=$?
 
