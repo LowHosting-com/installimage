@@ -35,11 +35,11 @@ echo 3 >/proc/sys/vm/drop_caches
 
 #force unmount all raids
 for md in $(ls /dev/md[0-9]*); do
-    mdadm --stop $md
+    mdadm --stop $md 2>&1
 done
 
 for md in $(ls /dev/md[120-140]*); do
-    mdadm --stop $md
+    mdadm --stop $md 2>&1
 done
 
 
