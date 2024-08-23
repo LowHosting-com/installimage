@@ -4041,7 +4041,7 @@ function is_virtual_machine() {
 #      esac
 #      return 1;;
 #    esac
-return 1;;
+return 1
 }
 
 # function to check if we have to use GPT or MS-DOS partition tables
