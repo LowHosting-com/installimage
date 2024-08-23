@@ -269,7 +269,7 @@ network_interface_ipv6_gateway() {
 # $1 <network_interface>
 gen_ifcfg_script_centos() {
   local network_interface="$1"
-  local predicted_network_interface_name="$(predict_network_interface_name "$network_interface")"
+  local predicted_network_interface_name="eth0"
   local ipv4_addrs=($(network_interface_ipv4_addrs "$network_interface"))
 
   echo "### $COMPANY installimage"
@@ -377,7 +377,7 @@ setup_etc_sysconfig_network_scripts_centos() {
     local ip_addrs=("${ipv4_addrs[@]}" $(network_interface_ipv6_addrs "$network_interface"))
     ((${#ip_addrs[@]} == 0)) && continue
 
-    local predicted_network_interface_name="$(predict_network_interface_name "$network_interface")"
+    local predicted_network_interface_name="eth0"
     local ifcfg_script="/etc/sysconfig/network-scripts/ifcfg-$predicted_network_interface_name"
 
     debug "# setting up $ifcfg_script"
@@ -403,7 +403,7 @@ setup_etc_sysconfig_network_scripts_centos() {
 gen_ifcfg_script_suse() {
   local network_interface="$1"
   local ipv4_addrs=($(network_interface_ipv4_addrs "$network_interface"))
-  local predicted_network_interface_name="$(predict_network_interface_name "$network_interface")"
+  local predicted_network_interface_name="eth0"
 
   echo "### $COMPANY installimage"
   echo
@@ -453,7 +453,7 @@ gen_ifcfg_script_suse() {
 gen_ifroute_script() {
   local network_interface="$1"
   local gateway="$(network_interface_ipv4_gateway "$network_interface")"
-  local predicted_network_interface_name="$(predict_network_interface_name "$network_interface")"
+  local predicted_network_interface_name="eth0"
   local gatewayv6="$(network_interface_ipv6_gateway "$network_interface")"
 
   echo "### $COMPANY installimage"
@@ -488,7 +488,7 @@ setup_etc_sysconfig_network_scripts_suse() {
     local ip_addrs=("${ipv4_addrs[@]}" $(network_interface_ipv6_addrs "$network_interface"))
     ((${#ip_addrs[@]} == 0)) && continue
 
-    local predicted_network_interface_name="$(predict_network_interface_name "$network_interface")"
+    local predicted_network_interface_name="eth0"
     local ifcfg_script="/etc/sysconfig/network/ifcfg-$predicted_network_interface_name"
 
     debug "# setting up $ifcfg_script"
@@ -643,7 +643,7 @@ gen_etc_netplan_01_netcfg_yaml_entry() {
   local ipv4_addrs=($(network_interface_ipv4_addrs "$network_interface"))
   local ipv6_addrs=($(network_interface_ipv6_addrs "$network_interface"))
   ((${#ipv4_addrs[@]} == 0)) && ((${#ipv6_addrs[@]} == 0)) && return
-  local predicted_network_interface_name="$(predict_network_interface_name "$network_interface")"
+  local predicted_network_interface_name="eth0"
   echo "    $predicted_network_interface_name:"
   local addresses=()
   if ((${#ipv4_addrs[@]} > 0)); then
@@ -772,7 +772,7 @@ gen_network_file() {
   local network_interface="$1"
   echo "### $COMPANY installimage"
   echo '[Match]'
-  local predicted_network_interface_name="$(predict_network_interface_name "$network_interface")"
+  local predicted_network_interface_name="eth0"
   echo "Name=$predicted_network_interface_name"
   echo
   echo '[Network]'
@@ -819,7 +819,7 @@ setup_etc_systemd_network_files() {
     local ipv4_addrs=($(network_interface_ipv4_addrs "$network_interface"))
     local ip_addrs=("${ipv4_addrs[@]}" $(network_interface_ipv6_addrs "$network_interface"))
     ((${#ip_addrs[@]} == 0)) && continue
-    local predicted_network_interface_name="$(predict_network_interface_name "$network_interface")"
+    local predicted_network_interface_name="eth0"
     local network_file="/etc/systemd/network/10-$predicted_network_interface_name.network"
     debug "# setting up $network_file"
     gen_network_file "$network_interface" > "$FOLD/hdd/$network_file" 2> >(debugoutput)
