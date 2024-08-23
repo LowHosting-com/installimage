@@ -2421,7 +2421,12 @@ make_swraid() {
         debug "Array RAID Level is: '$array_raidlevel' - $can_assume_clean - $array_layout"
         debug "Array metadata is: '$array_metadata'"
 
-        yes | mdadm -q -C $raid_device -l$array_raidlevel -n$n $array_metadata $array_layout $can_assume_clean $components --name="md$md_count" 2>&1 | debugoutput ; EXITCODE=$?
+        # Clear old superblock (metadata) to prevent conflicts
+        for component in $components; do
+          mdadm --zero-superblock $component
+        done
+
+        yes | mdadm -q -C $raid_device -l$array_raidlevel -n$n $array_metadata $array_layout $can_assume_clean $components --name="md$md_count" --force 2>&1 | debugoutput ; EXITCODE=$?
 
         count="$[$count+1]"
         md_count="$[$md_count+1]"
