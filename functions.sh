@@ -1896,7 +1896,7 @@ done
 
 
   # Calculate components for mdadm
-  components=$(lsblk -nr -o NAME "$1" | awk '{print "/dev/" $1}')
+  components=$(lsblk -nr -o NAME "$1" | grep -E 'p[0-9]+' | awk '{print "/dev/" $1}')
 
   # Clear old superblock (metadata) to prevent conflicts
   for component in $components; do
