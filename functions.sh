@@ -4095,6 +4095,16 @@ function part_test_size() {
   if [ "$SWRAID" -eq 0 ]; then
     dev=$DRIVE1
   fi
+  
+#ZERO SUPERBLOCK
+
+  mdadm --zero-superblock $DRIVE1p1 2>&1
+  mdadm --zero-superblock $DRIVE1p2 2>&1
+  mdadm --zero-superblock $DRIVE1p3 2>&1
+  mdadm --zero-superblock $DRIVE1p4 2>&1
+##
+  
+  
   local DRIVE_SIZE; DRIVE_SIZE=$(blockdev --getsize64 "$dev")
   DRIVE_SIZE=$(( DRIVE_SIZE / 1024 / 1024 ))
 
