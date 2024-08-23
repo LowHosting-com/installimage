@@ -505,8 +505,8 @@ setup_etc_sysconfig_network_scripts_suse() {
 }
 
 # gen /etc/network/interfaces entry
-# $1 <network_interface>
-gen_etc_network_interfaces_entry() {
+# $1 <network_interface> 
+gen_etc_network_interfaces_entry() { #DEBIAN/UBUNTU
   local network_interface="eth0"
   local predicted_network_interface_name="eth0"
   local ipv4_addrs=($(network_interface_ipv4_addrs "$network_interface"))
