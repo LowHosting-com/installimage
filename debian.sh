@@ -141,7 +141,7 @@ delete_grub_device_map() {
 run_os_specific_functions() {
 
   sed -i '/hetzner/d' "$FOLD/hdd/etc/apt/sources.list"
-  rm -fr "$FOLD/hdd/etc/apt/sources.list.d/hetzner*"
+  rm -fr "$FOLD/hdd/etc/apt/sources.list.d/hetzner-security-updates.list"
   
   execute_chroot_command "apt update;apt install ifupdown2 -y 2>&1"
 	
